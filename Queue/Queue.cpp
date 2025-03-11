@@ -1,20 +1,63 @@
-﻿// Queue.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
-//
-
+﻿#include "QueueVector.h"
 #include <iostream>
+#include <string>
 
-int main()
-{
-    std::cout << "Hello World!\n";
+using namespace std;
+
+void testBasicQueueOperations();
+void testQueueUnderflow();
+void testWrongQueueSize();
+void testBracketBalancing();
+
+int main() {
+    testBasicQueueOperations();
+    testQueueUnderflow();
+    testWrongQueueSize();
+    testBracketBalancing();
+    return 0;
 }
 
-// Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
-// Отладка программы: F5 или меню "Отладка" > "Запустить отладку"
+void testBasicQueueOperations() {
+    QueueVector<int> queue(5);
+    queue.enQueue(10);
+    queue.enQueue(20);
+    queue.enQueue(30);
+    if (queue.isEmpty()) {
+        cout << "Error: Queue should not be empty after enQueue" << endl;
+    }
+    if (queue.deQueue() != 10 || queue.deQueue() != 20 || queue.deQueue() != 30) {
+        cout << "Error: Incorrect order of element extraction" << endl;
+    }
+    if (!queue.isEmpty()) {
+        cout << "Error: Queue should be empty after extracting all elements" << endl;
+    }
+}
 
-// Советы по началу работы 
-//   1. В окне обозревателя решений можно добавлять файлы и управлять ими.
-//   2. В окне Team Explorer можно подключиться к системе управления версиями.
-//   3. В окне "Выходные данные" можно просматривать выходные данные сборки и другие сообщения.
-//   4. В окне "Список ошибок" можно просматривать ошибки.
-//   5. Последовательно выберите пункты меню "Проект" > "Добавить новый элемент", чтобы создать файлы кода, или "Проект" > "Добавить существующий элемент", чтобы добавить в проект существующие файлы кода.
-//   6. Чтобы снова открыть этот проект позже, выберите пункты меню "Файл" > "Открыть" > "Проект" и выберите SLN-файл.
+void testQueueUnderflow() {
+    try {
+        QueueVector<int> queue(3);
+        queue.enQueue(1);
+        queue.deQueue();
+        cout << "Attempting to deQueue from an empty queue" << endl;
+        queue.deQueue();
+    } catch (const QueueUnderflow& e) {
+        cerr << e.what() << endl;
+    }
+}
+
+void testWrongQueueSize() {
+    cout << "Attempting to create queue with wrong size" << endl;
+    try {
+        QueueVector<string> wrongSize(-1);
+    } catch (const WrongQueueSize& e) {
+        cerr << e.what() << endl;
+    }
+}
+
+void testBracketBalancing() {
+    string testCases[] = {"", "[", "{[{}]}", "([)]", "((())))", "{[()]}", "{[({[()]})}"}; 
+    for (int i = 0; i < 7; ++i) {
+        bool result = checkBalanceBrackets(testCases[i].c_str(), 5);
+        cout << "Tested: " << testCases[i] << " Result: " << (result ? "True" : "False") << endl;
+    }
+}
