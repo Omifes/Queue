@@ -46,20 +46,24 @@ private:
     T* queue;
 
     void resize(){
-        int newCapacity = capacity * 2;
-        T* newQueue = new T[newCapacity];
+        int newSize = size * 2;
+        T* newQueue = new T[newSize];
         for (int i = 0; i < size; i++)
         {
-            newQueue[i] = queue[(head + i) % capacity];
+            newQueue[i] = queue[(head + i) % size];
         }
         delete[] queue;
         queue = newQueue;
         head = 0;
         tail = size;
-        capacity = newCapacity;
+        size = newSize;
     }
         
 public:
+    int getQuantity() const {
+        return quantity;
+    }
+
     QueueVector(int size) : quantity(0), head(0), tail(0), size(size) {
         if (size <= 0) {
             throw WrongQueueSize();
@@ -72,7 +76,7 @@ public:
     }
 
     void enQueue(const T& e) override {
-        if (quantity == size) {
+        if (isFull()) {
             resize();
         }
         queue[tail] = e;
@@ -81,7 +85,7 @@ public:
     }
     
     T deQueue() override {
-        if (quantity == 0) {
+        if (isEmpty()) {
             throw QueueUnderflow();
         }
         T e = queue[head];
@@ -103,27 +107,48 @@ public:
 bool checkBalanceBrackets(const char* text, const int maxDeep) {
     QueueVector<char> queue1(maxDeep);
     QueueVector<char> queue2(maxDeep);
+    QueueVector<char> reversed(maxDeep);
+    
+    bool foundClosing = false;
+
     for (int i = 0; text[i] != '\0'; i++) {
         if (text[i] == '(' || text[i] == '[' || text[i] == '{') {
+            if(foundClosing) {
+                return false;
+            }
             queue1.enQueue(text[i]);
+            if (queue1.getQuantity() > maxDeep) {
+                return false;
+            }
         }
-    }
-    QueueVector<char> reversed(maxDeep);
-    for (int i = 0; text[i] != '\0'; i++) {
+    
         if (text[i] == ')' || text[i] == ']' || text[i] == '}') {
+            foundClosing = true;
             if (queue1.isEmpty()) {
                 return false;
             }
-            reversed.enQueue(text[i]);          
+            reversed.enQueue(text[i]);
+            if (reversed.getQuantity() > maxDeep) {
+                return false;
+            }
         }   
     }   
-
-    while (!reversed.isEmpty()) {
-        queue2.enQueue(reversed.deQueue());
+    char* temp = new char[maxDeep];
+    int rQuantity = reversed.getQuantity();
+    for (int i = 0; i < rQuantity; i++) {
+        temp[i] = reversed.deQueue();
     }
+    for (int i = rQuantity - 1; i >= 0; i--) {
+        queue2.enQueue(temp[i]);
+    }
+    delete[] temp;
 
     while (!queue1.isEmpty() && !queue2.isEmpty()) {
-        if (queue1.deQueue() != queue2.deQueue()) {
+        char c1 = queue1.deQueue();
+        char c2 = queue2.deQueue();
+        if ((c1 == '(' && c2 != ')') || 
+            (c1 == '[' && c2 != ']') || 
+            (c1 == '{' && c2 != '}')) {
             return false;
         }
     }
