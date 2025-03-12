@@ -55,7 +55,7 @@ private:
         delete[] queue;
         queue = newQueue;
         head = 0;
-        tail = size;
+        tail = quantity;
         size = newSize;
     }
         
